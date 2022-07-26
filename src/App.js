@@ -4,6 +4,7 @@ import UserTable from "./UserTable";
 import { useQuery } from "react-query";
 import UserGrid from "./UserGrid";
 import Loading from './Loading/Loading';
+import ClimbingBoxLoader from "react-spinners/ClimbingBoxLoader";
 
 function App() {
   const [page, setPage] = useState(1);
@@ -11,19 +12,23 @@ function App() {
   const [startNo, setStartNo] = useState(0);
   const [endNo, setEndNo] = useState(10);
   const [clicked, setClicked] = useState(true);
+  const [filterUser, setFilterUser] = useState([]);
   const [searchValue, setSearchValue] = useState("");
+  const [loading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 3000);
+  }, []);
   const { isLoading, data, refetch } = useQuery(["products"], () =>
     fetch(`https://randomuser.me/api/?page=1&results=50`)
       .then((res) => res.json())
-      .then((data) => setUsers(data.results))
+      .then((data) => {
+        setUsers(data.results);
+        setFilterUser(data.results);
+      })
   );
-  // useEffect(() => {
-  //   fetch(`https://randomuser.me/api/?page=1&results=50`)
-  //     .then((res) => res.json())
-  //     .then((data) => {
-  //       setUsers(data.results);
-  //     });
-  // }, []);
   const handlePage = (startNo, endNo, page) => {
     setStartNo(startNo);
     setEndNo(endNo);
@@ -54,11 +59,17 @@ function App() {
     if (e === "all") {
       refetch();
     } else {
-      const newData = users.filter((item) => item.gender === e);
+      const newData = filterUser.filter((item) => item.gender === e);
       setUsers(newData);
     }
   };
   return (
+   <div>
+     {loading ? (
+      <div className="flex h-screen justify-center items-center">
+        <ClimbingBoxLoader loading={loading} color={`#1986b1`} size={15} />
+      </div>
+    ) : (
     <div>
       {/* header part */}
       <div class="navbar bg-base-100">
@@ -196,7 +207,8 @@ function App() {
           5
         </button>
       </div>
-    </div>
+    </div>)}
+   </div>
   );
 }
 
